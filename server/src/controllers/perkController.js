@@ -128,7 +128,35 @@ export async function updatePerk(req, res, next) {
     res.json({ perk: doc });
   } catch (err) { next(err); }
 }
-// TODO 1: Implement delete a perk by ID
+// ...existing code...
+
+// ...existing code...
+// ...existing code...
+
+// remove any CommonJS require/exports and add this ES module function instead
 export async function deletePerk(req, res, next) {
- 
+  try {
+    if (!req.user?.id) return res.status(401).json({ message: 'Unauthorized' });
+
+    const { id } = req.params;
+    if (!id || !/^[0-9a-fA-F]{24}$/.test(id)) {
+      return res.status(400).json({ message: 'Invalid perk id' });
+    }
+
+    const perk = await Perk.findById(id);
+    if (!perk) return res.status(404).json({ message: 'Perk not found' });
+
+    // ensure user owns the perk
+    if (perk.createdBy?.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+
+    await Perk.findByIdAndDelete(id);
+    res.status(200).json({ message: 'Perk deleted successfully' });
+  } catch (err) {
+    next(err);
+  }
 }
+
+// ...existing code...
+// ...existing code...
